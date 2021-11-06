@@ -1,7 +1,13 @@
 import numpy as np
 from typing import *
 
+
 def spiral_data(points: int, classes: int) -> Tuple:
+    """
+    Copyright (c) 2015 Andrej Karpathy
+    License: https://github.com/cs231n/cs231n.github.io/blob/master/LICENSE
+    Source: https://cs231n.github.io/neural-networks-case-study/
+    """
     X = np.zeros((points*classes, 2))
     y = np.zeros(points*classes, dtype='uint8')
     for class_number in range(classes):
@@ -12,3 +18,22 @@ def spiral_data(points: int, classes: int) -> Tuple:
         y[ix] = class_number
     return X, y
 
+def sine(n_samples: int) -> Tuple[np.ndarray, np.ndarray]:
+    X = np.arange(n_samples).reshape(-1,1) / n_samples
+    y = np.sin(2 * np.pi * X).reshape(-1,1)
+    return X, y
+
+def cosine(n_samples: int) -> Tuple[np.ndarray, np.ndarray]:
+    X = np.arange(n_samples).reshape(-1,1) / n_samples
+    y = np.cos(2 * np.pi * X).reshape(-1,1)
+    return X, y
+
+def cosinewave(frequency: int) -> Tuple[np.ndarray, np.ndarray]:
+    x = np.arange(-frequency*np.pi, frequency*np.pi, 0.01)
+    y = np.cos(x)
+    return x, y
+
+def sinewave(frequency: int) -> Tuple[np.ndarray, np.ndarray]:
+    x = np.arange(-frequency*np.pi, frequency*np.pi, 0.01)
+    y = np.sin(x)
+    return x, y

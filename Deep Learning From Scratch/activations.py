@@ -13,6 +13,15 @@ class Activation(object):
     def backward(self, dvalues: np.ndarray):
         raise NotImplementedError
 
+class Linear(Activation):
+    """Returns itself"""
+    def forward(self, X: np.ndarray) -> np.ndarray:
+        return X
+
+    def backward(self, dvalues: np.ndarray) -> np.ndarray:
+        return dvalues
+        # self.dinputs = dvalues.copy()
+        # return self.dinputs
 
 class ReLU(Activation):
     """returns X if X > 0 else 0"""
@@ -26,6 +35,9 @@ class ReLU(Activation):
         return self.dinputs
         
 class Softmax(Activation):
+    """
+    Outputs a probability distribution that sums to 1. Great for one hot encoded targets (Categorical)
+    """
     def forward(self, X: np.ndarray) -> np.ndarray:
         self.X = X
         exp_values = np.exp(X - np.max(X, axis=1, keepdims=True))
@@ -41,6 +53,18 @@ class Softmax(Activation):
             self.dinputs[index] = np.dot(jacobian_matrix, d)
         return self.dinputs
 
+class Sigmoid(Activation):
+    """
+    Sigmoid squashes values between 0 and 1
+    Formula: 1 / (1 + np.exp(-val))
+    """
+    def forward(self, X: np.ndarray) -> np.ndarray:
+        self.output = 1 / (1 + np.exp(-X))
+        return self.output
+
+    def backward(self, dvalues: np.ndarray) -> np.ndarray:
+        self.dinputs = dvalues * (1 - self.output) * self.output
+        return self.dinputs
 
 
 class SoftmaxCrossEntropy():

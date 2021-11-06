@@ -30,9 +30,60 @@ class Loss(object):
         
         return reg_loss
 
+class MeanSquaredError(Loss):
+    """
+    Mean Squared Error
+    -----------------------
+    Calculation:
+        1. Forward
+            MEAN( y[0] - yhat[0]) ** 2 + (y[1] - yhat[1]) ** 2 + ... + (y[n] - yhat[n]) ** 2 )
+        2. Backward:
+            partial_deriv is:
+                (-2(y - yhat))/num_outputs (to normalize)
+    -----------------------
+    Note:
+        axis=-1 tells numpy to calculate mean across outputs, for each sample separately
+    """
+    def forward(self, yhat: np.ndarray, y: np.ndarray) -> np.ndarray:
+        return np.mean((y - yhat)**2, axis=-1)
+
+    def backward(self, dvalues: np.ndarray, y: np.ndarray):
+        num_samples, num_outputs = len(dvalues), len(dvalues[0])
+        self.dinputs = -2 * (y - dvalues) / num_outputs #gradient
+        self.dinputs = self.dinputs / num_samples #normalize
+        return self.dinputs
+
+class MeanAboluteError(Loss):
+    """
+    Mean Abolute Error
+    -----------------------
+    Calculation:
+        1. Forward
+            MEAN( abs(y[0] - yhat[0]) + ... + abs(y[n] - yhat[n]) )
+        2. Backward:
+            a. Deriv for abs = 1 if val > 0 else -1
+    -----------------------
+    Note:
+        axis=-1 tells numpy to calculate mean across outputs, for each sample separately
+    """
+    def forward(self, yhat: np.ndarray, y: np.ndarray) -> np.ndarray:
+        return np.mean(np.abs(y - yhat), axis=-1)
+
+    def backward(self, dvalues: np.ndarray, y: np.ndarray):
+        num_samples, num_outputs = len(dvalues), len(dvalues[0])
+        self.dinputs = np.sign(y - dvalues) / num_outputs
+        self.dinputs = self.dinputs / num_samples
+        return self.dinputs
 
 class CategoricalCrossentropy(Loss):
-    """Calculates negative log liklihood (nll)"""
+    """
+    Calculates negative log liklihood (nll)
+    ----------------
+    Use For multiclass classification
+    ----------------
+    Targets should be sparse, like so [1 0 0 0 2 0 0 1 0 0 2]
+    ----------------
+    """
     def forward(self, yhat, y):
         idxs = np.arange(len(yhat))
         yhat = np.clip(yhat, 1e-7, 1-1e-7) #clip so no zero values
@@ -56,4 +107,30 @@ class CategoricalCrossentropy(Loss):
         self.dinputs = -y / dvalues #Calculate gradient
         self.dinputs = self.dinputs / len(dvalues) #normalize 
         return self.dinputs
+
+class BinaryCrossEntropy(Loss):
+    """
+    Use For Binary Classification
+    ----------------
+    Sum the Log Liklihoods of correct/incorrect
+    np.mean( -(y * np.log(yhat) + (1 - y) * np.log(1 - yhat)) , axis=-1)
+    ----------------
+    Note, we need to reshape targets so that they are no longer sparse
+        [0, 0, 0, 1] -> reshape(-1,1) -> [[0], [0], [0], [1]]
+    
+    """
+    def forward(self, yhat: np.ndarray, y: np.ndarray) -> np.ndarray:
+        yhat = np.clip(yhat, 1e-7, 1 - 1e-7)
+        loss = -(y * np.log(yhat) + (1 - y) * np.log(1 - yhat))
+        loss = np.mean(loss, axis=-1)
+        return loss
+    
+
+    def backward(self, dvalues: np.ndarray, y: np.ndarray) -> np.ndarray:
+        num_samples, num_outputs = len(dvalues), len(dvalues[0])
+        dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
+        self.dinputs = -(y / dvalues - (1 - y) / (1 - dvalues)) / num_outputs
+        self.dinputs = self.dinputs / num_samples
+        return self.dinputs
+
 
