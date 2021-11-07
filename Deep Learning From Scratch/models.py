@@ -1,21 +1,25 @@
 import numpy as np
 from typing import *
+from utils import build_pred_method
 
 class Model(object):
     def __init__(self):
         self.layers = []
         self.num_layers = 0
         self.trainable = []
+        self.pred_method = None
         
     def add(self, layer):
         self.layers.append(layer)
         self.num_layers += 1
         if hasattr(layer, "weights"):
             self.trainable.append(layer)
+        self.pred_method = build_pred_method(self.layers[-1])
         
-    def set(self, loss, optimizer):
+    def set(self, *, loss, optimizer, accuracy_fn): #params that follow the * are keyword arguments
         self.loss = loss
         self.optimizer = optimizer
+        self.accuracy_fn = accuracy_fn
     
     def forward(self, X: np.ndarray) -> np.ndarray:
         for idx in range(self.num_layers):
@@ -38,6 +42,7 @@ class Model(object):
             loss += self.loss.regularize(layer)
         return loss
     
+    
     def train(self, X: np.ndarray, y: np.ndarray, num_epochs: int, print_every: int = 1):
         history = {"loss": [], "accuracy": []}
         for epoch in range(1, num_epochs+1):
@@ -45,7 +50,16 @@ class Model(object):
             loss = self.calc_loss(out, y)
             history["loss"].append(loss)
             
+            yhat = self.pred_method(out)
+            acc = self.accuracy_fn(yhat, y)
+            history["accuracy"].append(acc)
+            
             self.backward(out, y)
             self.optimize()
         
         return history
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        out = self.forward(X)
+        return self.pred_method(out) #yhat
+        
