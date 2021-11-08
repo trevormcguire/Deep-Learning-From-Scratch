@@ -2,7 +2,7 @@ import numpy as np
 from typing import *
 
 
-def spiral_data(points: int, classes: int) -> Tuple:
+def spiral(points: int, classes: int) -> Tuple:
     """
     Copyright (c) 2015 Andrej Karpathy
     License: https://github.com/cs231n/cs231n.github.io/blob/master/LICENSE

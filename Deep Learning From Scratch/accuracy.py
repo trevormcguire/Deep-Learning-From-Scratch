@@ -20,7 +20,7 @@ class Regression(Accuracy):
         self.precision = np.std(y) / 250 if not self.precision else self.precision
         return np.abs(yhat - y) < self.precision
 
-class OneHot(Accuracy):
+class Categorical(Accuracy):
     def compare(self, yhat: np.ndarray, y: np.ndarray) -> float:
         if dims(yhat) == 2:
             return (y == np.argmax(yhat, axis=1))

@@ -16,7 +16,7 @@ class Model(object):
             self.trainable.append(layer)
         self.pred_method = build_pred_method(self.layers[-1])
         
-    def set(self, *, loss, optimizer, accuracy_fn): #params that follow the * are keyword arguments
+    def set(self, loss, optimizer, accuracy_fn): #params that follow the * are keyword arguments
         self.loss = loss
         self.optimizer = optimizer
         self.accuracy_fn = accuracy_fn
@@ -43,7 +43,7 @@ class Model(object):
         return loss
     
     
-    def train(self, X: np.ndarray, y: np.ndarray, num_epochs: int, print_every: int = 1):
+    def train(self, X: np.ndarray, y: np.ndarray, num_epochs: int, print_every: int = 100):
         history = {"loss": [], "accuracy": []}
         for epoch in range(1, num_epochs+1):
             out = self.forward(X)
@@ -56,7 +56,9 @@ class Model(object):
             
             self.backward(out, y)
             self.optimize()
-        
+            if print_every and not epoch % print_every:
+                print(f"Epoch: {epoch}: Loss: {loss} || Accuracy: {acc}")
+
         return history
     
     def predict(self, X: np.ndarray) -> np.ndarray:
