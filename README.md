@@ -1,3 +1,3 @@
 # Deep-Learning-From-Scratch
-Neural Networks with Numpy only 
+Neural Networks with NumPy only 
 
