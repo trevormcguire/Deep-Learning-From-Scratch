@@ -39,6 +39,13 @@ class Layer(object):
         if self.L2b > 0:
             self.dbiases += 2 * self.L2b * self.biases
 
+    def get_params(self) -> Tuple[np.ndarray]:
+        return self.weights, self.biases
+
+    def set_params(self, weights: np.ndarray, biases: np.ndarray):
+        self.weights = weights
+        self.biases = biases
+
 
 class Dense(Layer):
     def __init__(self, 

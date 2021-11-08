@@ -1,6 +1,7 @@
 import numpy as np
 from typing import *
 from .utils import build_pred_method
+import pickle
 
 class Model(object):
     def __init__(self):
@@ -64,4 +65,25 @@ class Model(object):
     def predict(self, X: np.ndarray) -> np.ndarray:
         out = self.forward(X)
         return self.pred_method(out) #yhat
+
+    def get_params(self) -> List:
+        params = []
+        for layer in self.trainable:
+            params.append(layer.get_params())
+        return params
+
+    def set_params(self, params: List):
+        for (weights, biases), layer in zip(params, self.trainable):
+            layer.set_params(weights, biases)
+ 
+    def save_params(self, path: str):
+        params = self.get_params()
+        with open(path, 'wb') as f:
+            pickle.dump(params, f)
+
+    def load_params(self, path: str):
+        with open(path, 'rb') as f:
+            params = pickle.load(f)
+        self.set_params(params)
+        
         
